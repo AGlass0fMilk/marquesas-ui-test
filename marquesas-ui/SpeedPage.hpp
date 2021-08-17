@@ -19,7 +19,6 @@
 #define MARQUESAS_UI_SPEEDPAGE_HPP_
 
 #include "Page.hpp"
-#include "GradientMask.hpp"
 
 namespace marq
 {
@@ -31,10 +30,9 @@ class SpeedPage : public Page
 {
 public:
 
-    /* Create a SpeedPage using the given font and text color
-     * @note set color and color_2 to the same value to eliminate the gradient */
-    SpeedPage(lv_font_t *font, lv_font_t *units_font, lv_color_t color, lv_color_t color_2) : _font(font),
-    _units_font(units_font), _color(color), _color_2(color_2) { }
+    /* Create a SpeedPage using the given font and text color */
+    SpeedPage(lv_font_t *font, lv_font_t *units_font, lv_color_t color) : _font(font),
+    _units_font(units_font), _color(color){ }
 
     virtual ~SpeedPage() { }
 
@@ -81,9 +79,6 @@ protected:
     lv_font_t *_font;
     lv_font_t *_units_font;
     lv_color_t _color = LV_COLOR_BLACK;
-    lv_color_t _color_2 = LV_COLOR_BLACK;
-
-    GradientMask *_gradient = nullptr;
 
 };
 

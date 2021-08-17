@@ -719,13 +719,13 @@ void BuildPages(void)
     lv_color_t speed_text_color = lv_color_hex(0xE8E8E8E8);
     lv_color_t speed_text_color_2 = lv_color_hex(0xFF00FFFF);
 
-    marq::SpeedPage *page1 = new marq::SpeedPage(&enough_200, &lv_font_montserrat_46, speed_text_color, speed_text_color_2);
+    marq::SpeedPage *page1 = new marq::SpeedPage(&enough_200, &lv_font_montserrat_46, speed_text_color);
     page1->set_speed(0.0f);
-    marq::SpeedPage *page2 = new marq::SpeedPage(&enough_200, &lv_font_montserrat_46, speed_text_color, speed_text_color_2);
+    marq::SpeedPage *page2 = new marq::SpeedPage(&enough_200, &lv_font_montserrat_46, speed_text_color);
     page2->set_speed(10.0f);
-    marq::SpeedPage *page3 = new marq::SpeedPage(&enough_200, &lv_font_montserrat_46, speed_text_color, speed_text_color_2);
+    marq::SpeedPage *page3 = new marq::SpeedPage(&enough_200, &lv_font_montserrat_46, speed_text_color);
     page3->set_speed(100.0f);
-    marq::SpeedPage *page4 = new marq::SpeedPage(&enough_200, &lv_font_montserrat_46, speed_text_color, speed_text_color_2);
+    marq::SpeedPage *page4 = new marq::SpeedPage(&enough_200, &lv_font_montserrat_46, speed_text_color);
     page4->set_speed(250.0f);
 
     category_1_pages[0] = page1;
