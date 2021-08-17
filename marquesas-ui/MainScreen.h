@@ -19,6 +19,7 @@ extern lv_obj_t * trans_neutral_lbl;
 extern lv_obj_t * trans_drive_lbl;
 extern lv_obj_t * trans_super_lbl;
 extern lv_obj_t * trans_low_lbl;
+extern lv_obj_t * trans_gears_lbl;
 extern lv_obj_t * unleaded_lbl;
 extern lv_obj_t * lh_indicators;
 extern lv_obj_t * hi_beam_ind;

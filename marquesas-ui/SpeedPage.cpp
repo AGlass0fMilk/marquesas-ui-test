@@ -48,7 +48,7 @@ void SpeedPage::_draw(lv_obj_t *parent) {
     lv_obj_set_style_local_pad_bottom(_units_lbl, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, 0);
     lv_obj_set_style_local_text_font(_units_lbl, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, _units_font);
 
-    lv_obj_align(_units_lbl, parent, LV_ALIGN_CENTER, 0, 50); // force: 101
+    lv_obj_align(_units_lbl, parent, LV_ALIGN_CENTER, 0, 100); // force: 101
 
     /* Set this here because update display won't work without it */
     _drawn = true;
@@ -118,7 +118,7 @@ void SpeedPage::update_display() {
 
         _om = lv_objmask_create(_parent, NULL);
         lv_obj_set_size(_om, SPEEDPAGE_MAX_MASK_WIDTH, SPEEDPAGE_MAX_MASK_HEIGHT);
-        lv_obj_align(_om, NULL, LV_ALIGN_IN_TOP_MID, 0, 0);
+        lv_obj_align(_om, NULL, LV_ALIGN_CENTER, 0, 0);
 
         /*Add the created mask map to the object mask*/
         lv_draw_mask_map_param_t m;
@@ -157,7 +157,7 @@ void SpeedPage::update_display() {
         } else {
             lv_label_set_text(_units_lbl, "KMPH");
         }
-        lv_obj_align(_units_lbl, NULL, LV_ALIGN_CENTER, 0, 25); // force: 101
+        lv_obj_align(_units_lbl, NULL, LV_ALIGN_CENTER, 0, 75); // force: 101
 
     }
 }

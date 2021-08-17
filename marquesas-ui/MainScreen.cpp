@@ -4,6 +4,7 @@
 #include "SpeedPage.hpp"
 #include "FadeBox.hpp"
 #include "NavigableMenu.hpp"
+#include "GearSelector.hpp"
 
 ///////////////////// VARIABLES ////////////////////
 extern "C" {
@@ -19,6 +20,7 @@ lv_obj_t * trans_neutral_lbl;
 lv_obj_t * trans_drive_lbl;
 lv_obj_t * trans_super_lbl;
 lv_obj_t * trans_low_lbl;
+lv_obj_t * trans_gears_lbl;
 lv_obj_t * lh_indicators;
 lv_obj_t * hi_beam_ind;
 lv_obj_t * parking_lps_ind;
@@ -41,6 +43,8 @@ lv_obj_t * cc_speed_lbl;
 lv_obj_t * cc_units_lbl;
 lv_obj_t * thermasan_ind;
 lv_obj_t * Object5;
+
+GearSelector * gear_selector;
 
 ///////////////////// FUNCTIONS ////////////////////
 
@@ -298,104 +302,21 @@ void BuildPages(void)
 
     lv_obj_align(lh_top_lbl, screen, LV_ALIGN_IN_TOP_LEFT, 0, 0); // force: 46
 
-    trans_selector = lv_obj_create(screen, NULL);
-    lv_obj_set_click(trans_selector, false);
-    lv_obj_set_hidden(trans_selector, false);
-    lv_obj_clear_state(trans_selector, LV_STATE_DISABLED);
-    lv_obj_set_size(trans_selector, 163, 31);  // force: 0
-    lv_obj_align(trans_selector, screen, LV_ALIGN_IN_BOTTOM_MID, 0, -12); // force: 163
-    lv_obj_set_drag(trans_selector, false);
-    lv_obj_set_style_local_bg_color(trans_selector, LV_BTN_PART_MAIN, LV_STATE_DEFAULT,
-                                    lv_color_hex(255 * 256 * 256 + 255 * 256 + 255));
-    lv_obj_set_style_local_bg_opa(trans_selector, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, 2);
-    lv_obj_set_style_local_border_color(trans_selector, LV_BTN_PART_MAIN, LV_STATE_DEFAULT,
-                                        lv_color_hex(0 * 256 * 256 + 0 * 256 + 0));
-    lv_obj_set_style_local_border_opa(trans_selector, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, 0);
-    lv_obj_set_style_local_pad_left(trans_selector, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, 0);
-    lv_obj_set_style_local_pad_right(trans_selector, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, 0);
-    lv_obj_set_style_local_pad_top(trans_selector, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, 0);
-    lv_obj_set_style_local_pad_bottom(trans_selector, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, 0);
+    trans_gears_lbl = lv_label_create(screen, NULL);
+    lv_label_set_long_mode(trans_gears_lbl, LV_LABEL_LONG_EXPAND);
+    lv_label_set_align(trans_gears_lbl, LV_LABEL_ALIGN_LEFT);
+//    lv_label_set_text(trans_gears_lbl, "P");
+    lv_obj_set_size(trans_gears_lbl, 40, 29);  // force: 0
+    lv_obj_set_click(trans_gears_lbl, false);
+    lv_obj_set_hidden(trans_gears_lbl, false);
+    lv_obj_clear_state(trans_gears_lbl, LV_STATE_DISABLED);
+    lv_obj_set_drag(trans_gears_lbl, false);
+    lv_obj_set_style_local_text_color(trans_gears_lbl, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_GRAY);
+    lv_obj_set_style_local_text_font(trans_gears_lbl, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, &lv_font_montserrat_40);
+    lv_obj_set_style_local_text_letter_space(trans_gears_lbl, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, 2);
+    gear_selector = new GearSelector(trans_gears_lbl, "PRNDSL", LV_COLOR_WHITE);
+    lv_obj_align(trans_gears_lbl, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -12); // force: 19
 
-    trans_park_lbl = lv_label_create(trans_selector, NULL);
-    lv_label_set_long_mode(trans_park_lbl, LV_LABEL_LONG_EXPAND);
-    lv_label_set_align(trans_park_lbl, LV_LABEL_ALIGN_CENTER);
-    lv_label_set_text(trans_park_lbl, "P");
-    lv_obj_set_size(trans_park_lbl, 19, 29);  // force: 0
-    lv_obj_set_click(trans_park_lbl, false);
-    lv_obj_set_hidden(trans_park_lbl, false);
-    lv_obj_clear_state(trans_park_lbl, LV_STATE_DISABLED);
-    lv_obj_set_drag(trans_park_lbl, false);
-    lv_obj_set_style_local_text_font(trans_park_lbl, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, &lv_font_montserrat_26);
-
-    lv_obj_align(trans_park_lbl, trans_selector, LV_ALIGN_IN_LEFT_MID, 0, 0); // force: 19
-
-    trans_reverse_lbl = lv_label_create(trans_selector, NULL);
-    lv_label_set_long_mode(trans_reverse_lbl, LV_LABEL_LONG_EXPAND);
-    lv_label_set_align(trans_reverse_lbl, LV_LABEL_ALIGN_CENTER);
-    lv_label_set_text(trans_reverse_lbl, "R");
-    lv_obj_set_size(trans_reverse_lbl, 19, 29);  // force: 30
-    lv_obj_set_click(trans_reverse_lbl, false);
-    lv_obj_set_hidden(trans_reverse_lbl, false);
-    lv_obj_clear_state(trans_reverse_lbl, LV_STATE_DISABLED);
-    lv_obj_set_drag(trans_reverse_lbl, false);
-    lv_obj_set_style_local_text_color(trans_reverse_lbl, LV_BTN_PART_MAIN, LV_STATE_DEFAULT,
-                                      lv_color_hex(219 * 256 * 256 + 219 * 256 + 219));
-    lv_obj_set_style_local_text_opa(trans_reverse_lbl, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, 255);
-    lv_obj_set_style_local_text_font(trans_reverse_lbl, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, &lv_font_montserrat_26);
-
-    lv_obj_align(trans_reverse_lbl, trans_selector, LV_ALIGN_IN_LEFT_MID, 30, 0); // force: 19
-
-    trans_neutral_lbl = lv_label_create(trans_selector, NULL);
-    lv_label_set_long_mode(trans_neutral_lbl, LV_LABEL_LONG_EXPAND);
-    lv_label_set_align(trans_neutral_lbl, LV_LABEL_ALIGN_CENTER);
-    lv_label_set_text(trans_neutral_lbl, "N");
-    lv_obj_set_size(trans_neutral_lbl, 21, 29);  // force: 60
-    lv_obj_set_click(trans_neutral_lbl, false);
-    lv_obj_set_hidden(trans_neutral_lbl, false);
-    lv_obj_clear_state(trans_neutral_lbl, LV_STATE_DISABLED);
-    lv_obj_set_drag(trans_neutral_lbl, false);
-    lv_obj_set_style_local_text_font(trans_neutral_lbl, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, &lv_font_montserrat_26);
-
-    lv_obj_align(trans_neutral_lbl, trans_selector, LV_ALIGN_IN_LEFT_MID, 60, 0); // force: 21
-
-    trans_drive_lbl = lv_label_create(trans_selector, NULL);
-    lv_label_set_long_mode(trans_drive_lbl, LV_LABEL_LONG_EXPAND);
-    lv_label_set_align(trans_drive_lbl, LV_LABEL_ALIGN_CENTER);
-    lv_label_set_text(trans_drive_lbl, "D");
-    lv_obj_set_size(trans_drive_lbl, 22, 29);  // force: 90
-    lv_obj_set_click(trans_drive_lbl, false);
-    lv_obj_set_hidden(trans_drive_lbl, false);
-    lv_obj_clear_state(trans_drive_lbl, LV_STATE_DISABLED);
-    lv_obj_set_drag(trans_drive_lbl, false);
-    lv_obj_set_style_local_text_font(trans_drive_lbl, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, &lv_font_montserrat_26);
-
-    lv_obj_align(trans_drive_lbl, trans_selector, LV_ALIGN_IN_LEFT_MID, 90, 0); // force: 22
-
-    trans_super_lbl = lv_label_create(trans_selector, NULL);
-    lv_label_set_long_mode(trans_super_lbl, LV_LABEL_LONG_EXPAND);
-    lv_label_set_align(trans_super_lbl, LV_LABEL_ALIGN_CENTER);
-    lv_label_set_text(trans_super_lbl, "S");
-    lv_obj_set_size(trans_super_lbl, 16, 29);  // force: 120
-    lv_obj_set_click(trans_super_lbl, false);
-    lv_obj_set_hidden(trans_super_lbl, false);
-    lv_obj_clear_state(trans_super_lbl, LV_STATE_DISABLED);
-    lv_obj_set_drag(trans_super_lbl, false);
-    lv_obj_set_style_local_text_font(trans_super_lbl, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, &lv_font_montserrat_26);
-
-    lv_obj_align(trans_super_lbl, trans_selector, LV_ALIGN_IN_LEFT_MID, 120, 0); // force: 16
-
-    trans_low_lbl = lv_label_create(trans_selector, NULL);
-    lv_label_set_long_mode(trans_low_lbl, LV_LABEL_LONG_EXPAND);
-    lv_label_set_align(trans_low_lbl, LV_LABEL_ALIGN_CENTER);
-    lv_label_set_text(trans_low_lbl, "L");
-    lv_obj_set_size(trans_low_lbl, 15, 29);  // force: 150
-    lv_obj_set_click(trans_low_lbl, false);
-    lv_obj_set_hidden(trans_low_lbl, false);
-    lv_obj_clear_state(trans_low_lbl, LV_STATE_DISABLED);
-    lv_obj_set_drag(trans_low_lbl, false);
-    lv_obj_set_style_local_text_font(trans_low_lbl, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, &lv_font_montserrat_26);
-
-    lv_obj_align(trans_low_lbl, trans_selector, LV_ALIGN_IN_LEFT_MID, 150, 0); // force: 15
 
     lh_indicators = lv_obj_create(screen, NULL);
     lv_obj_set_click(lh_indicators, false);
@@ -764,8 +685,16 @@ void navigate_left() {
     menu->navigate_left();
 }
 
+int selected_gear_index = 0;
+char gears[] = "PRNDSL";
+
 void navigate_right() {
     menu->navigate_right();
+    selected_gear_index++;
+    if(selected_gear_index >= 6) {
+        selected_gear_index = 0;
+    }
+    gear_selector->set_selected_gear(gears[selected_gear_index]);
 }
 
 }
