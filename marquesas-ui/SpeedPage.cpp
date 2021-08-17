@@ -30,22 +30,7 @@ void SpeedPage::_draw(lv_obj_t *parent) {
         return;
     }
 
-    _speed_lbl = lv_label_create(parent, NULL);
-    lv_label_set_long_mode(_speed_lbl, LV_LABEL_LONG_EXPAND);
-    lv_label_set_align(_speed_lbl, LV_LABEL_ALIGN_CENTER);
-    lv_obj_set_size(_speed_lbl, 101, 26);  // force: 0
-    lv_obj_set_click(_speed_lbl, false);
-    lv_obj_set_hidden(_speed_lbl, false);
-    lv_obj_clear_state(_speed_lbl, LV_STATE_DISABLED);
-    lv_obj_set_drag(_speed_lbl, false);
-    lv_obj_set_style_local_text_color(_speed_lbl, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, _color);
-    lv_obj_set_style_local_text_opa(_speed_lbl, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, 255);
-    lv_obj_set_style_local_pad_left(_speed_lbl, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, 0);
-    lv_obj_set_style_local_pad_right(_speed_lbl, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, 0);
-    lv_obj_set_style_local_pad_top(_speed_lbl, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, 10);
-    lv_obj_set_style_local_pad_bottom(_speed_lbl, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, 0);
-    lv_obj_set_style_local_text_font(_speed_lbl, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, _font);
-    lv_obj_align(_speed_lbl, parent, LV_ALIGN_IN_TOP_MID, 0, 0); // force: 101
+    _mask_map = new lv_opa_t[SPEEDPAGE_MAX_MASK_WIDTH*SPEEDPAGE_MAX_MASK_HEIGHT];
 
     _units_lbl = lv_label_create(parent, NULL);
     lv_label_set_long_mode(_units_lbl, LV_LABEL_LONG_EXPAND);
@@ -65,7 +50,6 @@ void SpeedPage::_draw(lv_obj_t *parent) {
 
     lv_obj_align(_units_lbl, parent, LV_ALIGN_CENTER, 0, 50); // force: 101
 
-
     /* Set this here because update display won't work without it */
     _drawn = true;
 
@@ -74,8 +58,16 @@ void SpeedPage::_draw(lv_obj_t *parent) {
 }
 
 void SpeedPage::_undraw() {
-    lv_obj_del(_speed_lbl);
+    delete[] _mask_map;
     lv_obj_del(_units_lbl);
+    if(_bg) {
+        lv_obj_del(_bg);
+        _bg = nullptr;
+    }
+    if(_om) {
+        lv_obj_del(_om);
+        _om = nullptr;
+    }
 }
 
 void SpeedPage::set_speed(float speed_kmph) {
@@ -101,10 +93,61 @@ void SpeedPage::update_display() {
 
         /* Update the speed label */
         sprintf(speed_str, "%d", calc_speed());
-        lv_obj_set_style_local_text_color(_speed_lbl, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, _color);
-        lv_obj_set_style_local_text_font(_speed_lbl, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, _font);
-        lv_label_set_text(_speed_lbl, speed_str);
-        lv_obj_align(_speed_lbl, NULL, LV_ALIGN_IN_TOP_MID, 0, 0); // force: 101
+
+        /*Create a "8 bit alpha" canvas and clear it*/
+        lv_obj_t * canvas = lv_canvas_create(_parent, NULL);
+        lv_canvas_set_buffer(canvas, _mask_map, SPEEDPAGE_MAX_MASK_WIDTH,
+                SPEEDPAGE_MAX_MASK_HEIGHT, LV_IMG_CF_ALPHA_8BIT);
+        lv_canvas_fill_bg(canvas, LV_COLOR_BLACK, LV_OPA_TRANSP);
+
+        /*Draw a label to the canvas. The result "image" will be used as mask*/
+        lv_draw_label_dsc_t label_dsc;
+        lv_draw_label_dsc_init(&label_dsc);
+        label_dsc.color = LV_COLOR_WHITE;
+        label_dsc.font = _font;
+        lv_canvas_draw_text(canvas, 0, 0, SPEEDPAGE_MAX_MASK_WIDTH, &label_dsc, speed_str, LV_LABEL_ALIGN_CENTER);
+
+        /*The mask is reads the canvas is not required anymore*/
+        lv_obj_del(canvas);
+
+        /*Create an object mask which will use the created mask*/
+        if(_om) {
+            lv_obj_del(_om);
+            _om = nullptr;
+        }
+
+        _om = lv_objmask_create(_parent, NULL);
+        lv_obj_set_size(_om, SPEEDPAGE_MAX_MASK_WIDTH, SPEEDPAGE_MAX_MASK_HEIGHT);
+        lv_obj_align(_om, NULL, LV_ALIGN_IN_TOP_MID, 0, 0);
+
+        /*Add the created mask map to the object mask*/
+        lv_draw_mask_map_param_t m;
+        lv_area_t a;
+        a.x1 = 0;
+        a.y1 = 0;
+        a.x2 = SPEEDPAGE_MAX_MASK_WIDTH - 1;
+        a.y2 = SPEEDPAGE_MAX_MASK_HEIGHT - 1;
+        lv_draw_mask_map_init(&m, &a, _mask_map);
+        lv_objmask_add_mask(_om, &m);
+
+        /*Create a style with gradient*/
+        lv_style_init(&_grad_style_bg);
+        lv_style_set_bg_opa(&_grad_style_bg, LV_STATE_DEFAULT, LV_OPA_COVER);
+        lv_style_set_bg_color(&_grad_style_bg, LV_STATE_DEFAULT, lv_color_hex(0xd6d1c3));
+        lv_style_set_bg_grad_color(&_grad_style_bg, LV_STATE_DEFAULT, LV_COLOR_WHITE);
+        lv_style_set_bg_grad_dir(&_grad_style_bg, LV_STATE_DEFAULT, LV_GRAD_DIR_VER);
+
+        /* Create and object with the gradient style on the object mask.
+         * The text will be masked from the gradient*/
+        if(_bg) {
+            lv_obj_del(_bg);
+            _bg = nullptr;
+        }
+
+        _bg = lv_obj_create(_om, NULL);
+        lv_obj_reset_style_list(_bg, LV_OBJ_PART_MAIN);
+        lv_obj_add_style(_bg, LV_OBJ_PART_MAIN, &_grad_style_bg);
+        lv_obj_set_size(_bg, SPEEDPAGE_MAX_MASK_WIDTH, SPEEDPAGE_MAX_MASK_HEIGHT);
 
         /* Update the units label */
         lv_obj_set_style_local_text_color(_units_lbl, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, _color);

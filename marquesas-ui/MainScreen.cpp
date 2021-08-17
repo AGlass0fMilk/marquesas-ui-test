@@ -19,7 +19,6 @@ lv_obj_t * trans_neutral_lbl;
 lv_obj_t * trans_drive_lbl;
 lv_obj_t * trans_super_lbl;
 lv_obj_t * trans_low_lbl;
-lv_obj_t * unleaded_lbl;
 lv_obj_t * lh_indicators;
 lv_obj_t * hi_beam_ind;
 lv_obj_t * parking_lps_ind;
@@ -76,11 +75,23 @@ LV_IMG_DECLARE(img871289747);   // assets/poop-32.png
 #define BAR_PROPERTY_VALUE 0
 #define BAR_PROPERTY_VALUE_WITH_ANIM 1
 
-static const char category_1_title[] = "Speedometer";
-static const char category_2_title[] = "Vehicle Info";
-static CircularArray<marq::Page*> category_1_pages(2);
-static CircularArray<marq::Page*> category_2_pages(2);
-static marq::NavigableMenu::CategoryCollection categories(2);
+static const char *category_titles[] = {
+        "Speedometer",
+        "Tachometer",
+        "Vehicle Info",
+        "Fuel Economy",
+        "Campsite",
+        "Trip Info",
+        "Thermasan"
+};
+static CircularArray<marq::Page*> speedometer_page(1);
+static CircularArray<marq::Page*> tachometer_page(1);
+static CircularArray<marq::Page*> vehicle_info_pages(9);
+static CircularArray<marq::Page*> fuel_econ_page(1);
+static CircularArray<marq::Page*> campsite_pages(4);
+static CircularArray<marq::Page*> trip_info_page(1);
+static CircularArray<marq::Page*> thermasan_page(1);
+static marq::NavigableMenu::CategoryCollection categories(7);
 static marq::NavigableMenu *menu;
 
 extern "C" {
@@ -205,6 +216,11 @@ static void Object3_eventhandler(lv_obj_t * obj, lv_event_t event)
 }
 static void Object5_eventhandler(lv_obj_t * obj, lv_event_t event)
 {
+}
+
+void update_page_title(const char *title) {
+    lv_label_set_text(screen_title_lbl, menu->get_current_title());
+    lv_obj_align(screen_title_lbl, NULL, LV_ALIGN_IN_TOP_MID, 0, 0);
 }
 
 ///////////////////// SCREENS ////////////////////
@@ -380,21 +396,6 @@ void BuildPages(void)
     lv_obj_set_style_local_text_font(trans_low_lbl, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, &lv_font_montserrat_26);
 
     lv_obj_align(trans_low_lbl, trans_selector, LV_ALIGN_IN_LEFT_MID, 150, 0); // force: 15
-
-    unleaded_lbl = lv_label_create(screen, NULL);
-    lv_label_set_long_mode(unleaded_lbl, LV_LABEL_LONG_EXPAND);
-    lv_label_set_align(unleaded_lbl, LV_LABEL_ALIGN_CENTER);
-    lv_label_set_text(unleaded_lbl, "UNLEADED FUEL ONLY");
-    lv_obj_set_size(unleaded_lbl, 166, 16);  // force: 0
-    lv_obj_set_click(unleaded_lbl, false);
-    lv_obj_set_hidden(unleaded_lbl, false);
-    lv_obj_clear_state(unleaded_lbl, LV_STATE_DISABLED);
-    lv_obj_set_drag(unleaded_lbl, false);
-    lv_obj_set_style_local_text_color(unleaded_lbl, LV_BTN_PART_MAIN, LV_STATE_DEFAULT,
-                                      lv_color_hex(132 * 256 * 256 + 132 * 256 + 132));
-    lv_obj_set_style_local_text_opa(unleaded_lbl, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, 255);
-
-    lv_obj_align(unleaded_lbl, screen, LV_ALIGN_CENTER, 0, 100); // force: 166
 
     lh_indicators = lv_obj_create(screen, NULL);
     lv_obj_set_click(lh_indicators, false);
@@ -713,37 +714,50 @@ void BuildPages(void)
 //
 //    fade_box = new marq::FadeBox(Object5);
 
-    categories[0] = std::make_tuple(category_1_title, &category_1_pages);
-    categories[1] = std::make_tuple(category_2_title, &category_2_pages);
+    categories[0] = std::make_tuple(category_titles[0], &speedometer_page);
+    categories[1] = std::make_tuple(category_titles[1], &tachometer_page);
+    categories[2] = std::make_tuple(category_titles[2], &vehicle_info_pages);
+    categories[3] = std::make_tuple(category_titles[3], &fuel_econ_page);
+    categories[4] = std::make_tuple(category_titles[4], &campsite_pages);
+    categories[5] = std::make_tuple(category_titles[5], &trip_info_page);
+    categories[6] = std::make_tuple(category_titles[6], &thermasan_page);
 
     lv_color_t speed_text_color = lv_color_hex(0xE8E8E8E8);
     lv_color_t speed_text_color_2 = lv_color_hex(0xFF00FFFF);
 
     marq::SpeedPage *page1 = new marq::SpeedPage(&enough_200, &lv_font_montserrat_46, speed_text_color);
-    page1->set_speed(0.0f);
-    marq::SpeedPage *page2 = new marq::SpeedPage(&enough_200, &lv_font_montserrat_46, speed_text_color);
-    page2->set_speed(10.0f);
-    marq::SpeedPage *page3 = new marq::SpeedPage(&enough_200, &lv_font_montserrat_46, speed_text_color);
-    page3->set_speed(100.0f);
-    marq::SpeedPage *page4 = new marq::SpeedPage(&enough_200, &lv_font_montserrat_46, speed_text_color);
-    page4->set_speed(250.0f);
+    page1->set_speed(250.0f);
 
-    category_1_pages[0] = page1;
-    category_1_pages[1] = page2;
-    category_2_pages[0] = page3;
-    category_2_pages[1] = page4;
+    speedometer_page[0] = page1;
+    tachometer_page[0] = new marq::Page();
+    for(int i = 0; i < 9; i++) {
+        vehicle_info_pages[i] = new marq::Page();
+    }
+
+    fuel_econ_page[0] = new marq::Page();
+
+    for(int i = 0; i < 4; i++) {
+        campsite_pages[i] = new marq::Page();
+    }
+
+    trip_info_page[0] = new marq::Page();
+
+    thermasan_page[0] = new marq::Page();
 
     menu = new marq::NavigableMenu(Object5, &categories, 0, 0);
-
+    update_page_title(menu->get_current_title());
 
 }
 
+/* TODO attach fade in done handler to update the title */
 void navigate_up() {
     menu->navigate_up();
+    update_page_title(menu->get_current_title());
 }
 
 void navigate_down() {
     menu->navigate_down();
+    update_page_title(menu->get_current_title());
 }
 
 void navigate_left() {

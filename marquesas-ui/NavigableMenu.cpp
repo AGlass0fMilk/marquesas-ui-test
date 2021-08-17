@@ -28,25 +28,29 @@ NavigableMenu::NavigableMenu(lv_obj_t *container, CategoryCollection *categories
 }
 
 void NavigableMenu::navigate_up() {
-    auto [ title, pages ] = _categories->next();
+    auto [ title, pages ] = _categories->previous();
     _current_title = title;
     _fadebox.fade_to(pages->current(), FADE_SPEED_MS);
 }
 
 void NavigableMenu::navigate_down() {
-    auto [ title, pages ] = _categories->previous();
+    auto [ title, pages ] = _categories->next();
     _current_title = title;
     _fadebox.fade_to(pages->current(), FADE_SPEED_MS);
 }
 
 void NavigableMenu::navigate_left() {
     auto [ title, pages ] = _categories->current();
-    _fadebox.fade_to(pages->next(), FADE_SPEED_MS);
+    if(pages->size() > 1) {
+        _fadebox.fade_to(pages->next(), FADE_SPEED_MS);
+    }
 }
 
 void NavigableMenu::navigate_right() {
     auto [ title, pages ] = _categories->current();
-    _fadebox.fade_to(pages->previous(), FADE_SPEED_MS);
+    if(pages->size() > 1) {
+        _fadebox.fade_to(pages->previous(), FADE_SPEED_MS);
+    }
 }
 
 void NavigableMenu::set_page_index(int category, int page) {

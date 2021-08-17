@@ -20,6 +20,9 @@
 
 #include "Page.hpp"
 
+#define SPEEDPAGE_MAX_MASK_WIDTH 300
+#define SPEEDPAGE_MAX_MASK_HEIGHT 200
+
 namespace marq
 {
 
@@ -73,12 +76,16 @@ protected:
     int _last_speed = 0;
     float _current_speed_kmph = 0.0f;
 
-    lv_obj_t *_speed_lbl = nullptr;
     lv_obj_t *_units_lbl = nullptr;
 
     lv_font_t *_font;
     lv_font_t *_units_font;
     lv_color_t _color = LV_COLOR_BLACK;
+
+    lv_opa_t *_mask_map = nullptr;
+    lv_obj_t *_om = nullptr;
+    lv_style_t _grad_style_bg;
+    lv_obj_t *_bg = nullptr;
 
 };
 

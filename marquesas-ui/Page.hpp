@@ -67,10 +67,10 @@ public:
 protected:
 
     /* Internal draw function implemented by subclass */
-    virtual void _draw(lv_obj_t *parent) = 0;
+    virtual void _draw(lv_obj_t *parent) { };
 
     /* Internal undraw function implemented by subclass */
-    virtual void _undraw() = 0;
+    virtual void _undraw() { };
 
 protected:
 

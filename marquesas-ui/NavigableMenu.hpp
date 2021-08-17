@@ -58,6 +58,10 @@ public:
     /* Gets the absolute category/page location */
     std::tuple<int, int> get_page_index();
 
+    const char* get_current_title() const {
+        return _current_title;
+    }
+
 protected:
 
     lv_obj_t *_container;
