@@ -20,6 +20,8 @@
 #include "lv_drivers/indev/mousewheel.h"
 #include "lv_examples/lv_examples.h"
 
+#include "MainScreen.h"
+
 /*********************
  *      DEFINES
  *********************/
@@ -47,6 +49,12 @@ lv_indev_t *kb_indev;
 /**********************
  *   GLOBAL FUNCTIONS
  **********************/
+extern void BuildPages();
+
+extern void navigate_up();
+extern void navigate_down();
+extern void navigate_left();
+extern void navigate_right();
 
 int main(int argc, char **argv)
 {
@@ -58,9 +66,17 @@ int main(int argc, char **argv)
 
   /*Initialize the HAL (display, input devices, tick) for LVGL*/
   hal_init();
+//
+//  lv_demo_widgets();
+  BuildPages();
 
-  lv_demo_widgets();
+  /* Capture keypad inputs */
+//  lv_group_t * g = lv_group_create();
+//  lv_group_add_obj(g, screen);
+//  lv_indev_set_group(kb_indev, g);
+
 //  lv_demo_printer();
+  lv_scr_load(screen);
 
   while (1) {
     /* Periodically call the lv_task handler.
@@ -75,6 +91,88 @@ int main(int argc, char **argv)
 /**********************
  *   STATIC FUNCTIONS
  **********************/
+
+void on_up_pressed() {
+    printf("up pressed\n");
+    navigate_up();
+}
+
+void on_down_pressed() {
+    printf("down pressed\n");
+    navigate_down();
+}
+
+void on_right_pressed() {
+    printf("right pressed\n");
+    navigate_right();
+}
+
+void on_left_pressed() {
+    printf("left pressed\n");
+    navigate_left();
+}
+
+void on_enter_pressed() {
+    printf("enter pressed\n");
+}
+
+void on_key_released(int idx) {
+    if(idx == 0) {
+        on_up_pressed();
+    } else if(idx == 1) {
+        on_down_pressed();
+    } else if(idx == 2) {
+        on_right_pressed();
+    } else if(idx == 3) {
+        on_left_pressed();
+    } else if(idx == 4) {
+        on_enter_pressed();
+    }
+}
+
+int pressed[5] = {0, 0, 0, 0, 0};
+static int key_to_idx(int key) {
+    if(key == 17) { /* UP */
+        return 0;
+    } else if(key == 18) { /* DOWN */
+        return 1;
+    } else if (key == 19) { /* RIGHT */
+        return 2;
+    } else if (key == 20) { /* LEFT */
+        return 3;
+    } else if (key == 10) { /* ENTER/OK */
+        return 4;
+    } else {
+        return 0;
+    }
+}
+
+static int keyboard_intercept(lv_indev_drv_t * indev_drv, lv_indev_data_t * data) {
+
+    int result = keyboard_read(indev_drv, data);
+
+    if(data->key != 17 && data->key != 18 && data->key != 19 && data->key != 20 && data->key != 10) {
+        return result;
+    }
+
+    int idx = key_to_idx(data->key);
+
+    if(data->state == LV_INDEV_STATE_PR) {
+        if(!pressed[idx]) {
+            pressed[idx] = 1;
+//            printf("key pressed: %d\n", data->key);
+        }
+    } else if(data->state == LV_INDEV_STATE_REL) {
+        if(pressed[idx]) {
+            pressed[idx] = 0;
+            on_key_released(idx);
+//            printf("key released: %d\n", data->key);
+        }
+    }
+
+    return result;
+
+}
 
 /**
  * Initialize the Hardware Abstraction Layer (HAL) for the Littlev graphics
@@ -98,34 +196,34 @@ static void hal_init(void) {
 
   /* Add the mouse as input device
    * Use the 'mouse' driver which reads the PC's mouse*/
-  mouse_init();
-  lv_indev_drv_t indev_drv;
-  lv_indev_drv_init(&indev_drv); /*Basic initialization*/
-  indev_drv.type = LV_INDEV_TYPE_POINTER;
-
-  /*This function will be called periodically (by the library) to get the mouse position and state*/
-  indev_drv.read_cb = mouse_read;
-  lv_indev_t *mouse_indev = lv_indev_drv_register(&indev_drv);
+//  mouse_init();
+//  lv_indev_drv_t indev_drv;
+//  lv_indev_drv_init(&indev_drv); /*Basic initialization*/
+//  indev_drv.type = LV_INDEV_TYPE_POINTER;
+//
+//  /*This function will be called periodically (by the library) to get the mouse position and state*/
+//  indev_drv.read_cb = mouse_read;
+//  lv_indev_t *mouse_indev = lv_indev_drv_register(&indev_drv);
 
   /*Set a cursor for the mouse*/
-  LV_IMG_DECLARE(mouse_cursor_icon); /*Declare the image file.*/
-  lv_obj_t * cursor_obj = lv_img_create(lv_scr_act(), NULL); /*Create an image object for the cursor */
-  lv_img_set_src(cursor_obj, &mouse_cursor_icon);           /*Set the image source*/
-  lv_indev_set_cursor(mouse_indev, cursor_obj);             /*Connect the image  object to the driver*/
+//  LV_IMG_DECLARE(mouse_cursor_icon); /*Declare the image file.*/
+//  lv_obj_t * cursor_obj = lv_img_create(lv_scr_act(), NULL); /*Create an image object for the cursor */
+//  lv_img_set_src(cursor_obj, &mouse_cursor_icon);           /*Set the image source*/
+//  lv_indev_set_cursor(mouse_indev, cursor_obj);             /*Connect the image  object to the driver*/
 
   /*Add the keyboard as input device.*/
   lv_indev_drv_t kb_drv;
   lv_indev_drv_init(&kb_drv);
   kb_drv.type = LV_INDEV_TYPE_KEYPAD;
-  kb_drv.read_cb = keyboard_read;
-  lv_indev_drv_register(&kb_drv);
+  kb_drv.read_cb = keyboard_intercept;
+  kb_indev = lv_indev_drv_register(&kb_drv);
 
   /*Add the mousewheel as input device.*/
-  lv_indev_drv_t enc_drv;
-  lv_indev_drv_init(&enc_drv);
-  enc_drv.type = LV_INDEV_TYPE_ENCODER;
-  enc_drv.read_cb = mousewheel_read;
-  lv_indev_drv_register(&enc_drv);
+//  lv_indev_drv_t enc_drv;
+//  lv_indev_drv_init(&enc_drv);
+//  enc_drv.type = LV_INDEV_TYPE_ENCODER;
+//  enc_drv.read_cb = mousewheel_read;
+//  lv_indev_drv_register(&enc_drv);
 
   /* Tick init.
    * You have to call 'lv_tick_inc()' in periodically to inform LittelvGL about
